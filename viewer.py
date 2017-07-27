@@ -28,7 +28,7 @@ class Viewer:
         self.previewLabel.bind("<1>", self.on_main_click)
         self.packFrames() # запихиваем фреймы в главное окно
         self.packImages(self.imageThumbnailLabels) # запихиваем тамбнейлики в imageGrid
-        self.labels = []
+
         
     def setImagePreviewLabel(self, window, file, size): # ставим картинку в Label для превью
         image = Image.open(file) # открываем картинку с помощью PIL
@@ -57,7 +57,7 @@ class Viewer:
 
     def packImages(self, imageLabels):
         i = 0
-        self.labels = imageLabels
+
         for label in imageLabels:
             label.pack() # запихиваеееем
             label.path = self.imageFilenames[i]
@@ -66,6 +66,7 @@ class Viewer:
         i = 0
         
     def on_main_click(self, event):
+        self.previewLabel.pack_forget()
         try:
             print(event.widget.path)
             self.prevClick = self.nowClick
@@ -79,12 +80,23 @@ class Viewer:
                 print('new imagelist:')
                 for text in self.imageFilenames:
                     print(text)
-                
-                
+                for label in self.imageThumbnailLabels:    
+                    label.pack_forget()
+                self.imageThumbnailLabels = self.makeImageLabels(self.imageThumbnailFrame, self.imageFilenames, self.thumbSize)
+                for label in self.imageThumbnailLabels:
+                    label.pack() # запихиваеееем
+
+                self.packImages(self.imageThumbnailLabels)
             except ValueError:
                 pass
+        self.setImagePreviewLabel(self.imagePreviewFrame, self.nowClick, self.previewSize)
+        self.previewLabel.pack()
+        self.previewLabel.bind("<1>", self.on_main_click)
 
-        
+    def unpackThumbnails(self):
+        for label in self.imageThumbnailLabels:
+            label.pack_forget()
+
     def run(self):
         self.root.mainloop() # пошло выполнение программы
 
