@@ -1,24 +1,49 @@
 from tkinter import *
 from PIL import Image, ImageTk
 import os
+import pickle
 
 class Viewer:
     def __init__(self):
         self.path = 'img'
         self.thumbSize = (200, 200) # максимальный размер тамбнейликов
         self.previewSize = (500,500) # максимальный размер превьюшечки
-
         self.root = Tk() # создаем главное окно
         self.imageThumbnailFrame = Frame(self.root) # фрейм для тамбнейликов
         self.imagePreviewFrame = Frame(self.root) # фрейм для превьюшки
         self.previewLabel = Label(self.imagePreviewFrame)
         self.prevClick = ''
         self.nowClick = ''
-
         # сохраняем пути картинок всех
         self.imageFilenames = [os.path.join(self.path, file) for file in os.listdir(self.path)]
-
         # грузим картинки в Label-объекты, привязанные к фрейму для тамбнейликов
+        
+
+        self.imageBasenames = pickle.load( open("order.pic","rb"))
+
+        if self.imageFilenames == self.imageBasenames:
+            print("Nothing new")
+            self.imageFilenames = self.imageBasenames
+        else:
+            print("New or deleted images")
+            #if new найти и добавить новое изображение в конец бд
+            for simage in self.imageFilenames:
+                if simage in self.imageBasenames:
+                    pass
+                else:
+                    print("New one: ", simage)
+                    self.imageBasenames.append(simage) #
+            #if deleted удалить из бд, удаленное
+            for bimage in self.imageBasenames:
+                if bimage in self.imageFilenames:
+                    pass
+                else:
+                    print("Deleted one: ", bimage)            
+                    self.imageBasenames.remove(bimage) #
+            self.imageFilenames = self.imageBasenames
+        #pickle.dump(self.imageFilenames, open("order.pic","wb"))
+
+        
         self.imageThumbnailLabels = self.makeImageLabels(self.imageThumbnailFrame, self.imageFilenames, self.thumbSize)
 
         self.setImagePreviewLabel(self.imagePreviewFrame, self.imageFilenames[0], self.previewSize)
@@ -87,6 +112,9 @@ class Viewer:
                     label.pack() # запихиваеееем
 
                 self.packImages(self.imageThumbnailLabels)
+                pickle.dump(self.imageFilenames, open("order.pic","wb"))
+
+                
             except ValueError:
                 pass
         self.setImagePreviewLabel(self.imagePreviewFrame, self.nowClick, self.previewSize)
@@ -97,6 +125,10 @@ class Viewer:
         for label in self.imageThumbnailLabels:
             label.pack_forget()
 
+    def on_closing(self):
+        pass
+
     def run(self):
+
         self.root.mainloop() # пошло выполнение программы
 
